@@ -14,7 +14,7 @@ export class TodosService {
         private usersService: UsersService
     ) {}
 
-    async findAll(userId: number): Promise<ResponseTodoDto[]> {
+    async findAll(userId: string): Promise<ResponseTodoDto[]> {
         const todos = await this.todosRepository.find({
             relations: [ 'user' ],
             where: {
@@ -24,10 +24,15 @@ export class TodosService {
             }
         })
 
+        if (!todos) {
+            throw new HttpException('Todos not found', 404)
+        }
+
         const responseTodos = todos.map((todo: Todo) => {
             const responseTodo: ResponseTodoDto = {
+                id: todo.id,
                 title: todo.title,
-                content: todo.content,
+                description: todo.description,
                 publish_date: todo.publish_date,
                 expire: todo.expire,
             }
@@ -38,8 +43,39 @@ export class TodosService {
         return responseTodos
     }
 
-    async create(requestTodoDto: RequestTodoDto): Promise<ResponseTodoDto> {
-        const user = await this.usersService.findOneUser(requestTodoDto.userId.toString())
+    async findOne(userId: string, todoId: string): Promise<ResponseTodoDto> {
+        const todos = await this.todosRepository.find({
+            relations: [ 'user' ],
+            where: {
+                user: {
+                    id: userId
+                }
+            }
+        })
+
+        if (!todos) {
+            throw new HttpException('Todos not found', 404)
+        }
+
+        const todo = todos[+todoId - 1]
+
+        if (!todo) {
+            throw new HttpException('Todo not found', 404)
+        }
+
+        const responseTodo: ResponseTodoDto = {
+            id: todo.id,
+            title: todo.title,
+            description: todo.description,
+            publish_date: todo.publish_date,
+            expire: todo.expire,
+        }
+
+        return responseTodo
+    }
+
+    async create(userId: string, requestTodoDto: RequestTodoDto): Promise<ResponseTodoDto> {
+        const user = await this.usersService.findOneUser(userId)
         
         if (!user) {
             throw new HttpException('User not found', 404)
@@ -47,7 +83,7 @@ export class TodosService {
 
         const todo: Todo = {
             title: requestTodoDto.title,
-            content: requestTodoDto.content,
+            description: requestTodoDto.description,
             expire: requestTodoDto.expire,
             publish_date: Math.trunc(Date.now() / 1000),
             user
@@ -57,7 +93,7 @@ export class TodosService {
 
         const responseTodoDto: ResponseTodoDto = {
             title: todo.title,
-            content: todo.content,
+            description: todo.description,
             publish_date: todo.publish_date,
             expire: todo.expire
         }

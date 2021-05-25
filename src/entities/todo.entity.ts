@@ -10,7 +10,7 @@ export class Todo {
     title: string
 
     @Column()
-    content: string
+    description: string
     
     @Column({ default: Math.trunc(Date.now() / 1000) })
     publish_date: number

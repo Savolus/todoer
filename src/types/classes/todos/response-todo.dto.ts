@@ -1,6 +1,7 @@
 export class ResponseTodoDto {
+    readonly id?: number
     readonly title: string
-    readonly content: string
+    readonly description: string
     readonly publish_date: number
     readonly expire: number
 }

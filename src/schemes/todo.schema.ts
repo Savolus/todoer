@@ -13,7 +13,7 @@ export const TodoSchema = new EntitySchema<Todo>({
         title: {
             type: String
         },
-        content: {
+        description: {
             type: String
         },
         publish_date: {
