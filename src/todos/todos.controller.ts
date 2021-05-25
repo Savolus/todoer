@@ -5,7 +5,9 @@ import { ResponseTodoDto } from 'src/types/classes/todos/response-todo.dto';
 
 @Controller('api/users/:userId/todos')
 export class TodosController {
-    constructor(private readonly todosService: TodosService) {}
+    constructor(
+        private readonly todosService: TodosService
+    ) {}
 
     @Get()
     findAll(@Param('userId') userId: string): Promise<ResponseTodoDto[]> {

@@ -1,5 +1,5 @@
-import { Todo } from "src/entities/todo.entity";
 import { EntitySchema } from "typeorm";
+import { UserRoleEnum } from "../types/enums/user-role.enum";
 import { User } from "../entities/user.entity";
 
 export const UserSchema = new EntitySchema<User>({
@@ -17,6 +17,14 @@ export const UserSchema = new EntitySchema<User>({
         },
         password: {
             type: String
+        },
+        email: {
+            type: String
+        },
+        role: {
+            type: 'enum',
+            enum: UserRoleEnum,
+            default: UserRoleEnum.USER
         }
     },
     relations: {

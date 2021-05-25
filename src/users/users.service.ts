@@ -21,7 +21,8 @@ export class UsersService {
         const responseUsersDto: ResponseUserDto[] = users.map((user: User) => {
             const responseUserDto: ResponseUserDto = {
                 id: user.id,
-                login: user.login
+                login: user.login,
+                email: user.email
             }
 
             return responseUserDto
@@ -39,7 +40,8 @@ export class UsersService {
 
         const userDto: ResponseUserDto = {
             id: user.id,
-            login: user.login
+            login: user.login,
+            email: user.email
         }
 
         return userDto
@@ -55,8 +57,22 @@ export class UsersService {
         return user
     }
 
+    async findOneUserDto(userDto: RequestUserDto): Promise<User> {
+        const user = await this.usersRepository.findOne({
+            where: {
+                login: userDto.login
+            }
+        })
+
+        if (!user) {
+            throw new HttpException('User not found', 404)
+        }
+
+        return user
+    }
+
     async create(requestUserDto: RequestUserDto): Promise<ResponseUserDto> {
-        const tempUser = await this.usersRepository.findOne({
+        const tempUser: User = await this.usersRepository.findOne({
             where: {
                 login: requestUserDto.login
             }
@@ -69,14 +85,22 @@ export class UsersService {
         const user: User = {
             login: requestUserDto.login,
             password: await hash(requestUserDto.password, 10),
+            email: requestUserDto.email,
             todos: []
         }
 
-        this.usersRepository.insert(user)
+        await this.usersRepository.insert(user)
 
+        const createdUser: User = await this.usersRepository.findOne({
+            where: {
+                login: requestUserDto.login
+            }
+        })
+        
         const responseUserDto: ResponseUserDto = {
-            id: user.id,
-            login: user.login
+            id: createdUser.id,
+            login: createdUser.login,
+            email: createdUser.email
         }
 
         return responseUserDto
@@ -96,19 +120,20 @@ export class UsersService {
                 }
             })
 
-            if (user.id !== tempUser.id) {
+            if (tempUser) {
                 throw new HttpException('User already exists', 409)
             }
         }
 
         user.login = requestUserDto.login
         user.password = await hash(requestUserDto.password, 10)
-
+        
         this.usersRepository.save(user)
 
         const responseUserDto: ResponseUserDto = {
             id: user.id,
-            login: user.login
+            login: user.login,
+            email: user.email
         }
 
         return responseUserDto

@@ -6,7 +6,9 @@ import { ResponseUserDto } from '../types/classes/users/response-user.dto';
 
 @Controller('api/users')
 export class UsersController {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(
+        private readonly usersService: UsersService
+    ) {}
 
     @Get()
     findAll(): Promise<ResponseUserDto[]> {
@@ -20,12 +22,16 @@ export class UsersController {
 
     @Post()
     create(@Body() userDto: RequestUserDto ): Promise<ResponseUserDto> {
+        if (!userDto.login || !userDto.password || !userDto.email) {
+            throw new HttpException('Bad request', 400) 
+        }
+
         return this.usersService.create(userDto)
     }
 
     @Put(':id')
     update(@Body() userDto: RequestUserDto, @Param('id') id: string): Promise<ResponseUserDto> {
-        if (!userDto.login || !userDto.password) {
+        if (!userDto.login || !userDto.password || !userDto.email) {
             throw new HttpException('Bad request', 400) 
         }
 
