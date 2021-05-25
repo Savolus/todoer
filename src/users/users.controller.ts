@@ -1,63 +1,39 @@
 import { Body, Controller, Get, Post, Param, HttpException, Put, Delete, HttpCode } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { User } from './user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from '../entities/user.entity';
+import { RequestUserDto } from '../types/classes/users/request-user.dto';
+import { ResponseUserDto } from '../types/classes/users/response-user.dto';
 
 @Controller('api/users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
     @Get()
-    async findAll(): Promise<User[]> {
-        return await this.usersService.findAll()
+    findAll(): Promise<ResponseUserDto[]> {
+        return this.usersService.findAll()
     }
 
     @Get(':id')
-    async findOne(@Param('id') id: string): Promise<User> {
-        const user = await this.usersService.findOne(id)
-
-        if (!user) {
-            throw new HttpException('Not Found', 404)
-        }
-
-        return user
+    findOne(@Param('id') id: string): Promise<ResponseUserDto> {
+        return this.usersService.findOne(id)
     }
 
     @Post()
-    async create(@Body() userDto: CreateUserDto ): Promise<void> {
-        if (!userDto.login || !userDto.password) {
-            throw new HttpException('Bad request', 400) 
-        }
-
-        try {
-            await this.usersService.create(userDto)
-        } catch {
-            throw new HttpException('Conflict', 409)
-        }
+    create(@Body() userDto: RequestUserDto ): Promise<ResponseUserDto> {
+        return this.usersService.create(userDto)
     }
 
     @Put(':id')
-    async update(@Body() userDto: UpdateUserDto, @Param('id') id: string): Promise<void> {
+    update(@Body() userDto: RequestUserDto, @Param('id') id: string): Promise<ResponseUserDto> {
         if (!userDto.login || !userDto.password) {
             throw new HttpException('Bad request', 400) 
         }
-  
-        try {
-            await this.usersService.update(id, userDto)
-        } catch {
-            throw new HttpException('Internal Server Error', 500)
-        }
+
+        return this.usersService.update(id, userDto)
     }
 
     @Delete(':id')
-    async remove(@Param('id') id: string): Promise<void> {
-        try {
-            await this.findOne(id)
-        } catch {
-            throw new HttpException('Bad request', 404)
-        }
-
-        await this.usersService.remove(id)
+    remove(@Param('id') id: string): void {
+        this.usersService.remove(id)
     }
 }

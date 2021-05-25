@@ -1,5 +1,5 @@
-import { User } from 'src/users/user.entity'
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm'
+import { User } from './user.entity'
 
 @Entity()
 export class Todo {
@@ -12,11 +12,11 @@ export class Todo {
     @Column()
     content: string
     
-    @Column({ default: Date.now() / 1000 })
+    @Column({ default: Math.trunc(Date.now() / 1000) })
     publish_date: number
 
     @Column()
-    estimate: number
+    expire: number
 
     @ManyToOne(type => User, user => user.todos)
     user: User

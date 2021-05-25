@@ -1,23 +1,23 @@
 import { Body, Controller, Get, HttpException, Param, Post } from '@nestjs/common';
-import { CreateTodoDto } from './dto/create-todo.dto';
-import { Todo } from './todo.entity';
+import { RequestTodoDto } from '../types/classes/todos/request-todo.dto';
 import { TodosService } from './todos.service';
+import { ResponseTodoDto } from 'src/types/classes/todos/response-todo.dto';
 
 @Controller('api/todos')
 export class TodosController {
     constructor(private readonly todosService: TodosService) {}
 
-    @Get(':user_id')
-    async findAll(@Param('user_id') user_id: string): Promise<Todo[]> {
-        return this.todosService.findAll(+user_id)
+    @Get(':userId')
+    findAll(@Param('userId') userId: string): Promise<ResponseTodoDto[]> {
+        return this.todosService.findAll(+userId)
     }
 
     @Post()
-    async create(@Body() todoDto: CreateTodoDto): Promise<void> {
-        if (!todoDto.title || !todoDto.content || !todoDto.estimate) {
+    create(@Body() todoDto: RequestTodoDto): Promise<ResponseTodoDto> {
+        if (!todoDto.title || !todoDto.content || !todoDto.expire) {
             throw new HttpException('Bad request', 400) 
         }
 
-        await this.todosService.create(todoDto)
+        return this.todosService.create(todoDto)
     }
 }

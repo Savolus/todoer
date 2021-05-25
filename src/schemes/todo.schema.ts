@@ -1,5 +1,5 @@
 import { EntitySchema } from "typeorm";
-import { Todo } from "./todo.entity";
+import { Todo } from "../entities/todo.entity";
 
 export const TodoSchema = new EntitySchema<Todo>({
     name: 'Todo',
@@ -18,10 +18,16 @@ export const TodoSchema = new EntitySchema<Todo>({
         },
         publish_date: {
             type: Number,
-            default: Date.now() / 1000
+            default: Math.trunc(Date.now() / 1000)
         },
-        estimate: {
+        expire: {
             type: Number
+        }
+    },
+    relations: {
+        user: {
+            type: 'many-to-one',
+            target: 'User'
         }
     }
 })

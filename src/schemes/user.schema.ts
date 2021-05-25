@@ -1,5 +1,6 @@
+import { Todo } from "src/entities/todo.entity";
 import { EntitySchema } from "typeorm";
-import { User } from "./user.entity";
+import { User } from "../entities/user.entity";
 
 export const UserSchema = new EntitySchema<User>({
     name: 'User',
@@ -21,7 +22,8 @@ export const UserSchema = new EntitySchema<User>({
     relations: {
         todos: {
             type: 'one-to-many',
-            target: 'Todo'
+            target: 'Todo',
+            onDelete: 'CASCADE'
         }
     }
 })
