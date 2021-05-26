@@ -1,12 +1,16 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { UsersModule } from 'src/users/users.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
-import { JwtStrategy } from 'src/strategies/jwt.strategy';
-import { AdminAccessGuard } from 'src/guards/admin-access.guard';
+
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+
+import { UsersModule } from '../users/users.module';
+
+import { JwtStrategy } from '../strategies/jwt.strategy';
+
+import { AdminAccessGuard } from '../guards/admin-access.guard';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
 @Module({
 	imports: [

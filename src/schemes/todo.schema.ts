@@ -1,4 +1,5 @@
 import { EntitySchema } from "typeorm";
+
 import { Todo } from "../entities/todo.entity";
 
 export const TodoSchema = new EntitySchema<Todo>({

@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm'
+
 import { UserRoleEnum } from '../types/enums/user-role.enum'
 import { Todo } from './todo.entity'
 

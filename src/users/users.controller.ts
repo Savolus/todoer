@@ -1,9 +1,22 @@
-import { Body, Controller, Get, Post, Param, HttpException, Put, Delete, HttpCode, UseGuards } from '@nestjs/common';
-import { UsersService } from './users.service';
+import {
+    Body,
+    Controller,
+    Get,
+    Post,
+    Param,
+    Put,
+    Delete,
+    UseGuards,
+    BadRequestException
+} from '@nestjs/common';
+
 import { RequestUserDto } from '../types/classes/users/request-user.dto';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
-import { AdminAccessGuard } from 'src/guards/admin-access.guard';
-import { IUser } from 'src/types/interfaces/users/user.interface';
+import { IUser } from '../types/interfaces/users/user.interface';
+
+import { AdminAccessGuard } from '../guards/admin-access.guard';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+
+import { UsersService } from './users.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/users')
@@ -21,17 +34,19 @@ export class UsersController {
     @UseGuards(AdminAccessGuard)
     @Get(':id')
     findOne(@Param('id') id: string): Promise<IUser> {
-        return {
-            ...this.usersService.findOne(id),
-            password: undefined
-        } as Promise<IUser>
+        return this.usersService.findOne(id).then((user: IUser) => {
+            return {
+                ...user,
+                password: undefined
+            }
+        })
     }
 
     @UseGuards(AdminAccessGuard)
     @Post()
     create(@Body() userDto: RequestUserDto ): Promise<IUser> {
         if (!userDto.login || !userDto.password || !userDto.email) {
-            throw new HttpException('Bad request', 400) 
+            throw new BadRequestException('Bad request')
         }
 
         return this.usersService.create(userDto)
@@ -40,7 +55,7 @@ export class UsersController {
     @Put(':id')
     update(@Body() userDto: RequestUserDto, @Param('id') id: string): Promise<IUser> {
         if (!userDto.login || !userDto.password || !userDto.email) {
-            throw new HttpException('Bad request', 400) 
+            throw new BadRequestException('Bad request')
         }
 
         return this.usersService.update(id, userDto)

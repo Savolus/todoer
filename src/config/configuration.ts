@@ -10,10 +10,8 @@ export const configuration: TypeOrmModuleOptions = {
     "password": process.env.DB_PASSWORD,
     "database": process.env.DB_NAME,
     "entities": [ "dist/**/*.entity{.ts,.js}" ],
-    "migrations": [ "src/migrations/**/*.migration{.ts,.js}" ],
     "cli": {
-        "entitiesDir": "src/entities/",
-        "migrationsDir": "src/migrations/"
+        "entitiesDir": "src/entities/"
     },
     "autoLoadEntities": true
 }

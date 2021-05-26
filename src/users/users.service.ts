@@ -1,14 +1,17 @@
-import { ConflictException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+    ConflictException,
+    Injectable,
+    NotFoundException,
+    UnauthorizedException
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { validate } from 'email-validator';
+import { hash } from 'bcrypt'
 
 import { RequestUserDto } from '../types/classes/users/request-user.dto';
-import { ResponseUserDto } from '../types/classes/users/response-user.dto';
-
-import { User } from '../entities/user.entity';
-import { hash } from 'bcrypt'
-import { validate } from 'email-validator';
 import { IUser } from 'src/types/interfaces/users/user.interface';
+import { User } from '../entities/user.entity';
 
 @Injectable()
 export class UsersService {

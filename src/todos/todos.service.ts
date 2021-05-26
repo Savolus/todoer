@@ -1,30 +1,30 @@
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { RequestTodoDto } from '../types/classes/todos/request-todo.dto';
-import { UsersService } from '../users/users.service';
-import { Todo } from '../entities/todo.entity';
 import { ITodo } from '../types/interfaces/todos/todo.interface'
-import { User } from 'src/entities/user.entity';
+import { Todo } from '../entities/todo.entity';
+import { User } from '../entities/user.entity';
+
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class TodosService {
     constructor(
-        @InjectRepository(Todo) private todosRepository: Repository<Todo>,
+        @InjectRepository(Todo)
+        private todosRepository: Repository<Todo>,
         private usersService: UsersService
     ) {}
 
     async findAll(userId: string): Promise<ITodo[]> {
-        const todos: Todo[] = await this.todosRepository.find({
-            relations: [ 'user' ],
-            select: [ 'id', 'title', 'description', 'publish_date', 'estimate' ],
-            where: {
-                user: {
-                    id: userId
-                }
-            }
-        })
+        const todos = await this.todosRepository.find()
+
+        console.dir(
+            await this.todosRepository
+                .createQueryBuilder('todo')
+                .getMany()
+        )
 
         return todos.map((todo: Todo) => {
             return {
@@ -40,7 +40,8 @@ export class TodosService {
             where: {
                 user: {
                     id: userId
-                }
+                },
+                id: todoId
             }
         })
 
@@ -54,7 +55,7 @@ export class TodosService {
         const user = await this.usersService.findOne(userId) as User
         
         if (!user) {
-            throw new HttpException('User not found', 404)
+            throw new NotFoundException('User not found')
         }
 
         const todo: Todo = {
@@ -65,16 +66,11 @@ export class TodosService {
             user
         }
 
-        await this.todosRepository.insert(todo)
-
-        
+        const createdUser = await this.todosRepository.save(todo)
 
         return {
-            ...await this.todosRepository.findOne({
-                where: {
-                    user
-                }
-            }), user:undefined
+            ...createdUser,
+            user: undefined
         } as ITodo
     }
 

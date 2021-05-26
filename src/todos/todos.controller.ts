@@ -1,10 +1,22 @@
-import { BadRequestException, Body, Controller, Get, HttpException, Param, Post, Req, UseGuards } from '@nestjs/common';
-import { RequestTodoDto } from '../types/classes/todos/request-todo.dto';
-import { TodosService } from './todos.service';
-import { ITodo } from 'src/types/interfaces/todos/todo.interface';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Get,
+    Param,
+    Post,
+    Req,
+    UseGuards
+} from '@nestjs/common';
 import { Request } from 'express';
-import { IUser } from 'src/types/interfaces/users/user.interface';
+
+import { RequestTodoDto } from '../types/classes/todos/request-todo.dto';
+import { IUser } from '../types/interfaces/users/user.interface';
+import { ITodo } from '../types/interfaces/todos/todo.interface';
+
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+
+import { TodosService } from './todos.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/todos')

@@ -1,8 +1,9 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { IUser } from 'src/types/interfaces/users/user.interface';
+import { Injectable } from '@nestjs/common';
 import { config } from 'dotenv'
+
+import { IUser } from '../types/interfaces/users/user.interface';
 
 config()
 
