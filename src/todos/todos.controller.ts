@@ -1,32 +1,48 @@
-import { Body, Controller, Get, HttpException, Param, Post, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpException, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { RequestTodoDto } from '../types/classes/todos/request-todo.dto';
 import { TodosService } from './todos.service';
-import { ResponseTodoDto } from 'src/types/classes/todos/response-todo.dto';
+import { ITodo } from 'src/types/interfaces/todos/todo.interface';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { Request } from 'express';
+import { IUser } from 'src/types/interfaces/users/user.interface';
 
 @UseGuards(JwtAuthGuard)
-@Controller('api/users/:userId/todos')
+@Controller('api/todos')
 export class TodosController {
     constructor(
         private readonly todosService: TodosService
     ) {}
 
     @Get()
-    findAll(@Param('userId') userId: string): Promise<ResponseTodoDto[]> {
-        return this.todosService.findAll(userId)
+    findAll(
+        @Req() req: Request
+    ): Promise<ITodo[]> {
+        const user = req.user as IUser
+
+        return this.todosService.findAll(user.id.toString())
     }
 
     @Get(':todoId')
-    findOne(@Param('userId') userId: string, @Param('todoId') todoId: string): Promise<ResponseTodoDto> {
-        return this.todosService.findOne(userId, todoId)
+    findOne(
+        @Req() req: Request,
+        @Param('todoId') todoId: string
+    ): Promise<ITodo> {
+        const user = req.user as IUser
+
+        return this.todosService.findOne(user.id.toString(), todoId)
     }
 
     @Post()
-    create(@Body() todoDto: RequestTodoDto, @Param('userId') userId: string): Promise<ResponseTodoDto> {
-        if (!todoDto.title || !todoDto.description || !todoDto.expire) {
-            throw new HttpException('Bad request', 400) 
+    create(
+        @Req() req: Request,
+        @Body() todoDto: RequestTodoDto
+    ): Promise<ITodo> {
+        if (!todoDto.title || !todoDto.description || !todoDto.estimate) {
+            throw new BadRequestException('Bad request')
         }
 
-        return this.todosService.create(userId, todoDto)
+        const user = req.user as IUser
+
+        return this.todosService.create(user.id.toString(), todoDto)
     }
 }

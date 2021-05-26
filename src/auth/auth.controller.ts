@@ -1,7 +1,7 @@
 import { Body, Controller, HttpException, Post } from '@nestjs/common';
 import { ResponseLoginDto } from 'src/types/classes/auth/response-login.dto';
 import { RequestUserDto } from 'src/types/classes/users/request-user.dto';
-import { ResponseUserDto } from 'src/types/classes/users/response-user.dto';
+import { IUser } from 'src/types/interfaces/users/user.interface';
 import { AuthService } from './auth.service';
 
 @Controller('api/auth')
@@ -11,7 +11,7 @@ export class AuthController {
     ) {}
 
     @Post('register')
-    register(@Body() userDto: RequestUserDto): Promise<ResponseUserDto> {
+    register(@Body() userDto: RequestUserDto): Promise<IUser> {
         if (!userDto.login || !userDto.password || !userDto.email) {
             throw new HttpException('Bad request', 400) 
         }

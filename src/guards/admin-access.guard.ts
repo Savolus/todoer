@@ -7,11 +7,12 @@ export class AdminAccessGuard implements CanActivate {
     constructor(
         private usersService: UsersService
     ) {}
+    
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const decodedUser = context.getArgs()[0].res.req.user
 
         try {
-            const user = await this.usersService.findOneUser(decodedUser.id)
+            const user = await this.usersService.findOne(decodedUser.id)
         
             return user.role === UserRoleEnum.ADMIN
         } catch {

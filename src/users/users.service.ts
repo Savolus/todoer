@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { ConflictException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -8,6 +8,7 @@ import { ResponseUserDto } from '../types/classes/users/response-user.dto';
 import { User } from '../entities/user.entity';
 import { hash } from 'bcrypt'
 import { validate } from 'email-validator';
+import { IUser } from 'src/types/interfaces/users/user.interface';
 
 @Injectable()
 export class UsersService {
@@ -16,153 +17,91 @@ export class UsersService {
         private usersRepository: Repository<User>
     ) {}
 
-    async findAll(): Promise<ResponseUserDto[]> {
-        const users = await this.usersRepository.find()
-
-        const responseUsersDto: ResponseUserDto[] = users.map((user: User) => {
-            const responseUserDto: ResponseUserDto = {
-                id: user.id,
-                login: user.login,
-                email: user.email
-            }
-
-            return responseUserDto
-        })
-
-        return responseUsersDto
+    async findAll(): Promise<IUser[]> {
+        return await this.usersRepository.find({
+            select: [ 'id', 'login', 'email', 'role' ]
+        }) as IUser[]
     }
 
-    async findOne(id: string): Promise<ResponseUserDto> {
-        const user = await this.usersRepository.findOne(id)
+    async findOne(id: string): Promise<IUser> {
+        const user: IUser = await this.usersRepository.findOne(id) as IUser
 
         if (!user) {
-            throw new HttpException('User not found', 404)
-        }
-
-        const userDto: ResponseUserDto = {
-            id: user.id,
-            login: user.login,
-            email: user.email
-        }
-
-        return userDto
-    }
-
-    async findOneByLogin(login: string): Promise<ResponseUserDto> {
-        const user = await this.usersRepository.findOne({
-            where: {
-                login
-            }
-        })
-
-        if (!user) {
-            throw new HttpException('User not found', 404)
-        }
-
-        const userDto: ResponseUserDto = {
-            id: user.id,
-            login: user.login,
-            email: user.email
-        }
-
-        return userDto
-    }
-
-    async findOneUser(id: number): Promise<User> {
-        const user = await this.usersRepository.findOne(id)
-
-        if (!user) {
-            throw new HttpException('User not found', 404)
+            throw new NotFoundException('User not found')
         }
 
         return user
     }
 
-    async findOneUserDto(userDto: RequestUserDto): Promise<User> {
-        const user = await this.usersRepository.findOne({
+    async findOneByLogin(login: string): Promise<IUser> {
+        const user: IUser = await this.usersRepository.findOne({
+            where: {
+                login
+            }
+        }) as IUser
+
+        if (!user) {
+            throw new NotFoundException('User not found')
+        }
+
+        return user
+    }
+
+    async create(userDto: RequestUserDto): Promise<IUser> {
+        if (!validate(userDto.email)) {
+            throw new UnauthorizedException('Invalid email')
+        }
+        
+        const tempUser: User = await this.usersRepository.findOne({
             where: {
                 login: userDto.login
             }
         })
 
-        if (!user) {
-            throw new HttpException('User not found', 404)
-        }
-
-        return user
-    }
-
-    async create(requestUserDto: RequestUserDto): Promise<ResponseUserDto> {
-        if (!validate(requestUserDto.email)) {
-            throw new HttpException('Invalid email', 401)
-        }
-        
-        const tempUser: User = await this.usersRepository.findOne({
-            where: {
-                login: requestUserDto.login
-            }
-        })
-
         if (tempUser) {
-            throw new HttpException('User already exists', 409)
+            throw new ConflictException('User already exists')
         }
         
         const user: User = {
-            login: requestUserDto.login,
-            password: await hash(requestUserDto.password, 10),
-            email: requestUserDto.email,
-            role: requestUserDto.role,
-            todos: []
+            login: userDto.login,
+            password: await hash(userDto.password, 10),
+            email: userDto.email,
+            role: userDto.role
         }
 
         await this.usersRepository.insert(user)
 
-        const createdUser: User = await this.usersRepository.findOne({
+        return await this.usersRepository.findOne({
+            select: [ 'id', 'login', 'email', 'role' ],
             where: {
-                login: requestUserDto.login
+                login: userDto.login
             }
-        })
-        
-        const responseUserDto: ResponseUserDto = {
-            id: createdUser.id,
-            login: createdUser.login,
-            email: createdUser.email
-        }
-
-        return responseUserDto
+        }) as IUser
     }
 
-    async update(id: string, requestUserDto: RequestUserDto): Promise<ResponseUserDto> {
+    async update(id: string, userDto: RequestUserDto): Promise<IUser> {
         const user = await this.usersRepository.findOne(id)
 
         if (!user) {
-            throw new HttpException('User not found', 404)
+            throw new NotFoundException('User not found')
         }
 
-        if (user.login !== requestUserDto.login) {
+        if (user.login !== userDto.login) {
             const tempUser = await this.usersRepository.findOne({
                 where: {
-                    login: requestUserDto.login
+                    login: userDto.login
                 }
             })
 
             if (tempUser) {
-                throw new HttpException('User already exists', 409)
+                throw new ConflictException('User already exists')
             }
         }
 
-        user.login = requestUserDto.login
-        user.password = await hash(requestUserDto.password, 10)
+        user.login = userDto.login
+        user.password = await hash(userDto.password, 10)
         
-        this.usersRepository.save(user)
-
-        const responseUserDto: ResponseUserDto = {
-            id: user.id,
-            login: user.login,
-            email: user.email
-        }
-
-        return responseUserDto
+        return await this.usersRepository.save(user) as IUser
     }
 
     async remove(id: string): Promise<void> {

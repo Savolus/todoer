@@ -3,5 +3,5 @@ export class ResponseTodoDto {
     readonly title: string
     readonly description: string
     readonly publish_date: number
-    readonly expire: number
+    readonly estimate: number
 }

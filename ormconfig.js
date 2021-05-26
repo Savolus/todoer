@@ -1,9 +1,8 @@
-import { TypeOrmModuleOptions } from "@nestjs/typeorm"
-import { config } from 'dotenv'
+const dotenv = require('dotenv')
 
-config()
+dotenv.config()
 
-export const configuration: TypeOrmModuleOptions = {
+module.exports = {
     "type": "mysql",
     "host": process.env.DB_HOST,
     "username": process.env.DB_USER,
@@ -11,6 +10,7 @@ export const configuration: TypeOrmModuleOptions = {
     "database": process.env.DB_NAME,
     "entities": [ "dist/**/*.entity{.ts,.js}" ],
     "migrations": [ "src/migrations/**/*.migration{.ts,.js}" ],
+    "seeds": [ "src/seeds/**/*{.ts,.js}" ],
     "cli": {
         "entitiesDir": "src/entities/",
         "migrationsDir": "src/migrations/"

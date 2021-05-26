@@ -17,11 +17,10 @@ export const TodoSchema = new EntitySchema<Todo>({
             type: String
         },
         publish_date: {
-            type: Number,
-            default: Math.trunc(Date.now() / 1000)
+            type: Date
         },
-        expire: {
-            type: Number
+        estimate: {
+            type: Date
         }
     },
     relations: {

@@ -1,11 +1,10 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ResponseLoginDto } from 'src/types/classes/auth/response-login.dto';
 import { RequestUserDto } from 'src/types/classes/users/request-user.dto';
-import { ResponseUserDto } from 'src/types/classes/users/response-user.dto';
 import { UsersService } from 'src/users/users.service';
-import { User } from 'src/entities/user.entity';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { IUser } from 'src/types/interfaces/users/user.interface';
 
 @Injectable()
 export class AuthService {
@@ -14,40 +13,37 @@ export class AuthService {
         private usersService: UsersService
     ) {}
 
-    async validateUser(requestUserDto: RequestUserDto) {
-        const user: User = await this.usersService.findOneUserDto(requestUserDto)
+    async validateUser(userDto: RequestUserDto) {
+        const user: IUser = await this.usersService.findOneByLogin(userDto.login)
 
         if (!user) {
-            throw new HttpException('User dos\'t exist', 401)
+            throw new UnauthorizedException('User dosn\'t exist')
         }
-        if (user.login !== requestUserDto.login) {
-            throw new HttpException('Invalid login', 401)
+        if (user.login !== userDto.login) {
+            throw new UnauthorizedException('Invalid login')
         }
-        if (user.email !== requestUserDto.email) {
-            throw new HttpException('Invalid email', 401)
+        if (user.email !== userDto.email) {
+            throw new UnauthorizedException('Invalid email')
         }
-        if (!(await compare(requestUserDto.password, user.password))) {
-            throw new HttpException('Invalid password', 401)
+        if (!(await compare(userDto.password, user.password))) {
+            throw new UnauthorizedException('Invalid password')
         }
 
         return user
     }
 
-    async register(userDto: RequestUserDto): Promise<ResponseUserDto> {
+    async register(userDto: RequestUserDto): Promise<IUser> {
         return this.usersService.create(userDto)
     }
 
     async login(requestUserDto: RequestUserDto): Promise<ResponseLoginDto> {
         const user = await this.validateUser(requestUserDto)
 
-        const responseLoginDto: ResponseLoginDto = {
+        return {
             token: await this.jwtService.sign({
-                id: user.id,
-                login: user.login,
-                email: user.email
-            }, { expiresIn: '12h' })
-        }
-
-        return responseLoginDto
+                ...user,
+                password: undefined
+            } as IUser, { expiresIn: '12h' })
+        } as ResponseLoginDto
     }
 }
