@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, BeforeInsert } from 'typeorm'
 import { UserRoleEnum } from '../types/enums/user-role.enum'
 import { Todo } from './todo.entity'
 
@@ -7,13 +7,13 @@ export class User {
     @PrimaryGeneratedColumn()
     id?: number
 
-    @Column()
+    @Column({ unique: true })
     login: string
 
     @Column()
     password: string
 
-    @Column()
+    @Column({ unique: true })
     email: string
 
     @Column({ default: UserRoleEnum.USER })

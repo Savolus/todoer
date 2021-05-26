@@ -7,6 +7,7 @@ import { ResponseUserDto } from '../types/classes/users/response-user.dto';
 
 import { User } from '../entities/user.entity';
 import { hash } from 'bcrypt'
+import { validate } from 'email-validator';
 
 @Injectable()
 export class UsersService {
@@ -47,7 +48,27 @@ export class UsersService {
         return userDto
     }
 
-    async findOneUser(id: string): Promise<User> {
+    async findOneByLogin(login: string): Promise<ResponseUserDto> {
+        const user = await this.usersRepository.findOne({
+            where: {
+                login
+            }
+        })
+
+        if (!user) {
+            throw new HttpException('User not found', 404)
+        }
+
+        const userDto: ResponseUserDto = {
+            id: user.id,
+            login: user.login,
+            email: user.email
+        }
+
+        return userDto
+    }
+
+    async findOneUser(id: number): Promise<User> {
         const user = await this.usersRepository.findOne(id)
 
         if (!user) {
@@ -72,6 +93,10 @@ export class UsersService {
     }
 
     async create(requestUserDto: RequestUserDto): Promise<ResponseUserDto> {
+        if (!validate(requestUserDto.email)) {
+            throw new HttpException('Invalid email', 401)
+        }
+        
         const tempUser: User = await this.usersRepository.findOne({
             where: {
                 login: requestUserDto.login
@@ -86,6 +111,7 @@ export class UsersService {
             login: requestUserDto.login,
             password: await hash(requestUserDto.password, 10),
             email: requestUserDto.email,
+            role: requestUserDto.role,
             todos: []
         }
 

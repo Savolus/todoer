@@ -13,6 +13,6 @@ export const configuration: TypeOrmModuleOptions = {
     "password": process.env.DB_PASSWORD,
     "database": process.env.DB_NAME,
     "entities": [ User, Todo ],
-    "synchronize": true,
+    // "synchronize": true,
     "autoLoadEntities": true
 }

@@ -75,7 +75,7 @@ export class TodosService {
     }
 
     async create(userId: string, requestTodoDto: RequestTodoDto): Promise<ResponseTodoDto> {
-        const user = await this.usersService.findOneUser(userId)
+        const user = await this.usersService.findOneUser(+userId)
         
         if (!user) {
             throw new HttpException('User not found', 404)

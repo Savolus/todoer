@@ -1,8 +1,10 @@
-import { Body, Controller, Get, HttpException, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Param, Post, UseGuards } from '@nestjs/common';
 import { RequestTodoDto } from '../types/classes/todos/request-todo.dto';
 import { TodosService } from './todos.service';
 import { ResponseTodoDto } from 'src/types/classes/todos/response-todo.dto';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('api/users/:userId/todos')
 export class TodosController {
     constructor(

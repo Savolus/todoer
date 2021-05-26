@@ -19,7 +19,8 @@ export const UserSchema = new EntitySchema<User>({
             type: String
         },
         email: {
-            type: String
+            type: String,
+            unique: true
         },
         role: {
             type: 'enum',
