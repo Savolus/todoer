@@ -10,6 +10,7 @@ import { hash } from 'bcrypt'
 import { RequestUserDto } from '../types/classes/users/request-user.dto';
 import { IUser } from 'src/types/interfaces/users/user.interface';
 import { User } from '../entities/user.entity';
+import { UserRoleEnum } from 'src/types/enums/user-role.enum';
 
 @Injectable()
 export class UsersService {
@@ -36,22 +37,32 @@ export class UsersService {
         }) as IUser
     }
 
-    async create(userDto: RequestUserDto): Promise<IUser> {
-        const tempUser: User = await this.usersRepository.findOne({
+    async create(userDto: RequestUserDto, isAdmin: boolean = false): Promise<IUser> {
+        const tempUserLogin: User = await this.usersRepository.findOne({
             where: {
                 login: userDto.login
             }
         })
 
-        if (tempUser) {
-            throw new ConflictException('User already exists')
+        if (tempUserLogin) {
+            throw new ConflictException('User with this login already exists')
+        }
+
+        const tempUserEmail: User = await this.usersRepository.findOne({
+            where: {
+                email: userDto.email
+            }
+        })
+
+        if (tempUserEmail) {
+            throw new ConflictException('User with this email already exists')
         }
         
         const user: User = {
             login: userDto.login,
             password: await hash(userDto.password, 10),
             email: userDto.email,
-            role: userDto.role
+            role: isAdmin? userDto.role : UserRoleEnum.USER
         }
 
         const createdUser = await this.usersRepository.save(user)
@@ -74,14 +85,24 @@ export class UsersService {
         }
 
         if (user.login !== userDto.login) {
-            const tempUser = await this.usersRepository.findOne({
+            const tempUserLogin = await this.usersRepository.findOne({
                 where: {
                     login: userDto.login
                 }
             })
 
-            if (tempUser) {
-                throw new ConflictException('User already exists')
+            if (tempUserLogin) {
+                throw new ConflictException('Login is already taken')
+            }
+
+            const tempUserEmail = await this.usersRepository.findOne({
+                where: {
+                    email: userDto.email
+                }
+            })
+
+            if (tempUserEmail) {
+                throw new ConflictException('Email is already taken')
             }
         }
 
