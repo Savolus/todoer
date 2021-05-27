@@ -51,10 +51,6 @@ export class TodosController {
         @Req() req: Request,
         @Body() todoDto: RequestTodoDto
     ): Promise<ITodo> {
-        if (!todoDto.title || !todoDto.description || !todoDto.estimate) {
-            throw new BadRequestException('Bad request')
-        }
-
         const user = req.user as IUser
 
         return this.todosService.create(user.id.toString(), todoDto)
@@ -66,10 +62,6 @@ export class TodosController {
         @Body() todoDto: RequestTodoDto,
         @Param('id') id: string
     ): Promise<ITodo> {
-        if (!todoDto.title || !todoDto.description || !todoDto.estimate) {
-            throw new BadRequestException('Bad request')
-        }
-
         const user = req.user as IUser
 
         return this.todosService.update(
@@ -86,6 +78,6 @@ export class TodosController {
     ): void {
         const user = req.user as IUser
 
-        this.todosService.remove(user.id.toString(), id)
+        this.todosService.delete(user.id.toString(), id)
     }
 }

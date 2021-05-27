@@ -15,7 +15,11 @@ export class AuthService {
         private usersService: UsersService
     ) {}
 
-    async validateUser(userDto: RequestUserDto) {
+    async register(userDto: RequestUserDto): Promise<IUser> {
+        return this.usersService.create(userDto)
+    }
+
+    async login(userDto: RequestUserDto): Promise<ResponseLoginDto> {
         const user: IUser = await this.usersService.findOneByLogin(userDto.login)
 
         if (!user) {
@@ -30,16 +34,6 @@ export class AuthService {
         if (!(await compare(userDto.password, user.password))) {
             throw new UnauthorizedException('Invalid password')
         }
-
-        return user
-    }
-
-    async register(userDto: RequestUserDto): Promise<IUser> {
-        return this.usersService.create(userDto)
-    }
-
-    async login(requestUserDto: RequestUserDto): Promise<ResponseLoginDto> {
-        const user = await this.validateUser(requestUserDto)
 
         return {
             token: await this.jwtService.sign({

@@ -15,7 +15,8 @@ export const TodoSchema = new EntitySchema<Todo>({
             type: String
         },
         description: {
-            type: String
+            type: String,
+            length: 4096
         },
         publish_date: {
             type: 'datetime'

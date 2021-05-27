@@ -54,7 +54,6 @@ export class TodosService {
 
     async create(userId: string, requestTodoDto: RequestTodoDto): Promise<ITodo> {
         const user = await this.usersService.findOne(userId) as User
-
         const todo: Todo = {
             title: requestTodoDto.title,
             description: requestTodoDto.description,
@@ -98,7 +97,7 @@ export class TodosService {
         } as ITodo
     }
 
-    remove(userId: string, todoId: string): void {
+    delete(userId: string, todoId: string): void {
         this.todosRepository.createQueryBuilder('todo')
             .delete()
             .from(Todo)

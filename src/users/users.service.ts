@@ -1,12 +1,10 @@
 import {
     ConflictException,
     Injectable,
-    NotFoundException,
-    UnauthorizedException
+    NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { validate } from 'email-validator';
 import { hash } from 'bcrypt'
 
 import { RequestUserDto } from '../types/classes/users/request-user.dto';
@@ -27,34 +25,18 @@ export class UsersService {
     }
 
     async findOne(id: string): Promise<IUser> {
-        const user: IUser = await this.usersRepository.findOne(id) as IUser
-
-        if (!user) {
-            throw new NotFoundException('User not found')
-        }
-
-        return user
+        return await this.usersRepository.findOne(id) as IUser
     }
 
     async findOneByLogin(login: string): Promise<IUser> {
-        const user: IUser = await this.usersRepository.findOne({
+        return await this.usersRepository.findOne({
             where: {
                 login
             }
         }) as IUser
-
-        if (!user) {
-            throw new NotFoundException('User not found')
-        }
-
-        return user
     }
 
     async create(userDto: RequestUserDto): Promise<IUser> {
-        if (!validate(userDto.email)) {
-            throw new UnauthorizedException('Invalid email')
-        }
-        
         const tempUser: User = await this.usersRepository.findOne({
             where: {
                 login: userDto.login
@@ -72,17 +54,19 @@ export class UsersService {
             role: userDto.role
         }
 
-        await this.usersRepository.insert(user)
+        const createdUser = await this.usersRepository.save(user)
 
-        return await this.usersRepository.findOne({
-            select: [ 'id', 'login', 'email', 'role' ],
-            where: {
-                login: userDto.login
-            }
-        }) as IUser
+        return {
+            ...createdUser,
+            password: undefined
+        } as IUser
     }
 
-    async update(id: string, userDto: RequestUserDto): Promise<IUser> {
+    async update(
+        id: string,
+        userDto: RequestUserDto,
+        isAdmin: boolean = false
+    ): Promise<IUser> {
         const user = await this.usersRepository.findOne(id)
 
         if (!user) {
@@ -104,10 +88,19 @@ export class UsersService {
         user.login = userDto.login
         user.password = await hash(userDto.password, 10)
         
-        return await this.usersRepository.save(user) as IUser
+        if (isAdmin) {
+            user.role = userDto.role
+        }
+
+        const updatedUser = await this.usersRepository.save(user) as IUser
+
+        return {
+            ...updatedUser,
+            password: undefined
+        } as IUser
     }
 
-    async remove(id: string): Promise<void> {
+    async delete(id: string): Promise<void> {
         await this.usersRepository.delete(id)
     }
 }

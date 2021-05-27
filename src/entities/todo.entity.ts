@@ -17,7 +17,7 @@ export class Todo {
     @Column()
     title: string
 
-    @Column()
+    @Column({ length: 4096 })
     description: string
     
     @Column({ type: 'datetime' })

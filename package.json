@@ -1,6 +1,6 @@
 {
   "name": "nest-rest-api",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "author": "",
   "private": true,
@@ -29,8 +29,9 @@
     "@nestjs/typeorm": "^7.1.5",
     "@types/passport-local": "^1.0.33",
     "bcrypt": "^5.0.1",
+    "class-transformer": "^0.4.0",
+    "class-validator": "^0.13.1",
     "dotenv": "^8.6.0",
-    "email-validator": "^2.0.4",
     "mysql2": "^2.2.5",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",

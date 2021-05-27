@@ -14,19 +14,11 @@ export class AuthController {
 
     @Post('register')
     register(@Body() userDto: RequestUserDto): Promise<IUser> {
-        if (!userDto.login || !userDto.password || !userDto.email) {
-            throw new BadRequestException('Bad request') 
-        }
-
         return this.authService.register(userDto)
     }
 
     @Post('login')
     login(@Body() userDto: RequestUserDto): Promise<ResponseLoginDto> {
-        if (!userDto.login || !userDto.password || !userDto.email) {
-            throw new BadRequestException('Bad request')
-        }
-
         return this.authService.login(userDto)
     }
 }

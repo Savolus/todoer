@@ -7,7 +7,7 @@ import {
     Put,
     Delete,
     UseGuards,
-    BadRequestException
+    Req
 } from '@nestjs/common';
 
 import { RequestUserDto } from '../types/classes/users/request-user.dto';
@@ -17,6 +17,7 @@ import { AdminAccessGuard } from '../guards/admin-access.guard';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
 import { UsersService } from './users.service';
+import { Request } from 'express';
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/users')
@@ -33,7 +34,9 @@ export class UsersController {
 
     @UseGuards(AdminAccessGuard)
     @Get(':id')
-    findOne(@Param('id') id: string): Promise<IUser> {
+    findOne(
+        @Param('id') id: string
+    ): Promise<IUser> {
         return this.usersService.findOne(id).then((user: IUser) => {
             return {
                 ...user,
@@ -44,26 +47,33 @@ export class UsersController {
 
     @UseGuards(AdminAccessGuard)
     @Post()
-    create(@Body() userDto: RequestUserDto ): Promise<IUser> {
-        if (!userDto.login || !userDto.password || !userDto.email) {
-            throw new BadRequestException('Bad request')
-        }
-
+    create(
+        @Body() userDto: RequestUserDto
+    ): Promise<IUser> {
         return this.usersService.create(userDto)
     }
 
-    @Put(':id')
-    update(@Body() userDto: RequestUserDto, @Param('id') id: string): Promise<IUser> {
-        if (!userDto.login || !userDto.password || !userDto.email) {
-            throw new BadRequestException('Bad request')
-        }
+    @Put()
+    updateByUser(
+        @Req() req: Request,
+        @Body() userDto: RequestUserDto
+    ): Promise<IUser> {
+        const user = req.user as IUser
 
-        return this.usersService.update(id, userDto)
+        return this.usersService.update(user.id.toString(), userDto)
+    }
+
+    @Put(':id')
+    updateByAdmin(
+        @Body() userDto: RequestUserDto,
+        @Param('id') id: string
+    ): Promise<IUser> {
+        return this.usersService.update(id, userDto, true)
     }
 
     @UseGuards(AdminAccessGuard)
     @Delete(':id')
-    remove(@Param('id') id: string): void {
-        this.usersService.remove(id)
+    delete(@Param('id') id: string): void {
+        this.usersService.delete(id)
     }
 }
