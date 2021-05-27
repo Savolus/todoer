@@ -20,10 +20,10 @@ export class Todo {
     @Column()
     description: string
     
-    @CreateDateColumn()
+    @Column({ type: 'datetime' })
     publish_date: Date
 
-    @DeleteDateColumn()
+    @Column({ type: 'datetime' })
     estimate: Date
 
     @ManyToOne(type => User, user => user.todos)

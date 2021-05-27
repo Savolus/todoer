@@ -45,7 +45,9 @@ export class AuthService {
             token: await this.jwtService.sign({
                 ...user,
                 password: undefined
-            } as IUser, { expiresIn: '12h' })
+            } as IUser, {
+                expiresIn: '12h'
+            })
         } as ResponseLoginDto
     }
 }

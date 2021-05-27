@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
 import { RequestTodoDto } from '../types/classes/todos/request-todo.dto';
@@ -18,13 +18,14 @@ export class TodosService {
     ) {}
 
     async findAll(userId: string): Promise<ITodo[]> {
-        const todos = await this.todosRepository.find()
-
-        console.dir(
-            await this.todosRepository
-                .createQueryBuilder('todo')
-                .getMany()
-        )
+        const todos = await this.todosRepository.find({
+            relations: [ 'user' ],
+            where: {
+                user: {
+                    id: userId
+                }
+            }
+        })
 
         return todos.map((todo: Todo) => {
             return {
@@ -53,10 +54,6 @@ export class TodosService {
 
     async create(userId: string, requestTodoDto: RequestTodoDto): Promise<ITodo> {
         const user = await this.usersService.findOne(userId) as User
-        
-        if (!user) {
-            throw new NotFoundException('User not found')
-        }
 
         const todo: Todo = {
             title: requestTodoDto.title,
@@ -66,15 +63,47 @@ export class TodosService {
             user
         }
 
-        const createdUser = await this.todosRepository.save(todo)
+        const createdTodo = await this.todosRepository.save(todo)
 
         return {
-            ...createdUser,
+            ...createdTodo,
             user: undefined
         } as ITodo
     }
 
-    async remove(id: string): Promise<void> {
-        await this.todosRepository.delete(id)
+    async update(
+        userId: string,
+        todoId: string,
+        requestTodoDto: RequestTodoDto
+    ): Promise<ITodo> {
+        const todo = await this.todosRepository.findOne({
+            relations: [ 'user' ],
+            where: {
+                user: {
+                    id: userId
+                },
+                id: todoId
+            }
+        })
+
+        todo.title = requestTodoDto.title
+        todo.description = requestTodoDto.description
+        todo.estimate = new Date(requestTodoDto.estimate)
+
+        await this.todosRepository.save(todo)
+
+        return {
+            ...todo,
+            user: undefined
+        } as ITodo
+    }
+
+    remove(userId: string, todoId: string): void {
+        this.todosRepository.createQueryBuilder('todo')
+            .delete()
+            .from(Todo)
+            .where('userId = :userId', { userId })
+            .where('id = :todoId', { todoId })
+            .execute()
     }
 }

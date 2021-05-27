@@ -20,7 +20,12 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 		}),
 		forwardRef(() => UsersModule)
 	],
-	providers: [ AuthService, JwtStrategy, JwtAuthGuard, AdminAccessGuard ],
+	providers: [
+		AuthService,
+		JwtStrategy,
+		JwtAuthGuard,
+		AdminAccessGuard
+	],
 	controllers: [ AuthController ],
 	exports: [ AuthService, JwtModule ]
 })

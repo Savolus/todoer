@@ -18,10 +18,10 @@ export const TodoSchema = new EntitySchema<Todo>({
             type: String
         },
         publish_date: {
-            type: Date
+            type: 'datetime'
         },
         estimate: {
-            type: Date
+            type: 'datetime'
         }
     },
     relations: {

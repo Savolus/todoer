@@ -17,7 +17,11 @@ export class User {
     @Column({ unique: true })
     email: string
 
-    @Column({ default: UserRoleEnum.USER })
+    @Column({
+        type: 'enum',
+        enum: UserRoleEnum,
+        default: UserRoleEnum.USER
+    })
     role?: UserRoleEnum
 
     @OneToMany(type => Todo, todo => todo.user)

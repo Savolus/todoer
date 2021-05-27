@@ -2,9 +2,11 @@ import {
     BadRequestException,
     Body,
     Controller,
+    Delete,
     Get,
     Param,
     Post,
+    Put,
     Req,
     UseGuards
 } from '@nestjs/common';
@@ -34,14 +36,14 @@ export class TodosController {
         return this.todosService.findAll(user.id.toString())
     }
 
-    @Get(':todoId')
+    @Get(':id')
     findOne(
         @Req() req: Request,
-        @Param('todoId') todoId: string
+        @Param('id') id: string
     ): Promise<ITodo> {
         const user = req.user as IUser
 
-        return this.todosService.findOne(user.id.toString(), todoId)
+        return this.todosService.findOne(user.id.toString(), id)
     }
 
     @Post()
@@ -56,5 +58,34 @@ export class TodosController {
         const user = req.user as IUser
 
         return this.todosService.create(user.id.toString(), todoDto)
+    }
+
+    @Put(':id')
+    update(
+        @Req() req: Request,
+        @Body() todoDto: RequestTodoDto,
+        @Param('id') id: string
+    ): Promise<ITodo> {
+        if (!todoDto.title || !todoDto.description || !todoDto.estimate) {
+            throw new BadRequestException('Bad request')
+        }
+
+        const user = req.user as IUser
+
+        return this.todosService.update(
+            user.id.toString(),
+            id,
+            todoDto
+        )
+    }
+
+    @Delete(':id')
+    delete(
+        @Req() req: Request,
+        @Param('id') id: string
+    ): void {
+        const user = req.user as IUser
+
+        this.todosService.remove(user.id.toString(), id)
     }
 }

@@ -13,5 +13,6 @@ export const configuration: TypeOrmModuleOptions = {
     "cli": {
         "entitiesDir": "src/entities/"
     },
+    // "synchronize": true,
     "autoLoadEntities": true
 }
