@@ -7,6 +7,7 @@ import { version } from '../package.json'
 import { ValidationExceptionClass } from './filters/validation.exception'
 
 import { AppModule } from './app.module';
+import { SERVER_PORT } from './config/configuration';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -40,7 +41,7 @@ async function bootstrap() {
 	
 	SwaggerModule.setup('swagger-ui', app, document);
 
-	await app.listen(process.env.PORT);
+	await app.listen(SERVER_PORT);
 }
 
 bootstrap();

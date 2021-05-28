@@ -19,7 +19,6 @@ export class RequestTodoDto {
         maxLength: 255
     })
     @IsNotEmpty({ message: ValidationErrors.IS_NOT_EMPTY })
-    @IsString({ message: ValidationErrors.IS_STRING })
     @MinLength(4, { message: ValidationErrors.MIN_LENGTH })
     @MaxLength(255, { message: ValidationErrors.MAX_LENGTH })
     readonly title: string
@@ -32,7 +31,6 @@ export class RequestTodoDto {
         maxLength: 4096
     })
     @IsNotEmpty({ message: ValidationErrors.IS_NOT_EMPTY })
-    @IsString({ message: ValidationErrors.IS_STRING })
     @MinLength(4, { message: ValidationErrors.MIN_LENGTH })
     @MaxLength(4096, { message: ValidationErrors.MAX_LENGTH })
     readonly description: string
