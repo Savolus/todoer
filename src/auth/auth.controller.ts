@@ -4,12 +4,14 @@ import {
     ApiResponse,
     ApiBody,
     ApiUnauthorizedResponse,
-    ApiConflictResponse
+    ApiConflictResponse,
+    ApiNotFoundResponse,
+    ApiBadRequestResponse
 } from '@nestjs/swagger'
+import { ResponseUserDto } from 'src/types/classes/users/response-user.dto';
 
 import { ResponseLoginDto } from '../types/classes/auth/response-login.dto';
 import { RequestUserDto } from '../types/classes/users/request-user.dto';
-import { IUser } from '../types/interfaces/users/user.interface';
 
 import { AuthService } from './auth.service';
 
@@ -23,14 +25,10 @@ export class AuthController {
     @ApiResponse({
         status: 201,
         description: 'Register user',
-        schema: {
-            example: {
-                "id": 5,
-                "login": "Mari",
-                "email": "some_cool_girl@gmail.com",
-                "role": "user"
-            }
-        }
+        type: ResponseUserDto
+    })
+    @ApiBadRequestResponse({
+        description: 'Bad request is given. Follow the request scheme'
     })
     @ApiConflictResponse({
         description: 'User with this credetials already exists'
@@ -39,7 +37,9 @@ export class AuthController {
         type: RequestUserDto
     })
     @Post('register')
-    register(@Body() userDto: RequestUserDto): Promise<IUser> {
+    register(
+        @Body() userDto: RequestUserDto
+    ): Promise<ResponseUserDto> {
         return this.authService.register(userDto)
     }
 
@@ -48,8 +48,14 @@ export class AuthController {
         description: 'Login user by generating Bearer token for the next 12h',
         type: ResponseLoginDto
     })
+    @ApiBadRequestResponse({
+        description: 'Bad request is given. Follow the request scheme'
+    })
     @ApiUnauthorizedResponse({
         description: 'Wrong user credentials'
+    })
+    @ApiNotFoundResponse({
+        description: 'No user with this credentials'
     })
     @ApiConflictResponse({
         description: 'User with this credetials doesn\'t exist'
@@ -58,7 +64,9 @@ export class AuthController {
         type: RequestUserDto
     })
     @Post('login')
-    login(@Body() userDto: RequestUserDto): Promise<ResponseLoginDto> {
+    login(
+        @Body() userDto: RequestUserDto
+    ): Promise<ResponseLoginDto> {
         return this.authService.login(userDto)
     }
 }

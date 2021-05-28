@@ -2,9 +2,7 @@ import {
     Entity,
     Column,
     PrimaryGeneratedColumn,
-    ManyToOne,
-    CreateDateColumn,
-    DeleteDateColumn
+    ManyToOne
 } from 'typeorm'
 
 import { User } from './user.entity'

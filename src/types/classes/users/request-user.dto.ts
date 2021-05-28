@@ -23,7 +23,6 @@ export class RequestUserDto {
         uniqueItems: true
     })
     @IsNotEmpty({ message: ValidationErrors.IS_NOT_EMPTY })
-    @IsString({ message: ValidationErrors.IS_STRING })
     @IsAscii({ message: ValidationErrors.IS_ASCII })
     @MinLength(4, { message: ValidationErrors.MIN_LENGTH })
     @MaxLength(16, { message: ValidationErrors.MAX_LENGTH })
@@ -37,7 +36,6 @@ export class RequestUserDto {
         maxLength: 20
     })
     @IsNotEmpty({ message: ValidationErrors.IS_NOT_EMPTY })
-    @IsString({ message: ValidationErrors.IS_STRING })
     @MinLength(8, { message: ValidationErrors.MIN_LENGTH })
     @MaxLength(20, { message: ValidationErrors.MAX_LENGTH })
     readonly password: string
@@ -49,7 +47,6 @@ export class RequestUserDto {
         uniqueItems: true
     })
     @IsNotEmpty({ message: ValidationErrors.IS_NOT_EMPTY })
-    @IsString({ message: ValidationErrors.IS_STRING })
     @IsEmail({}, { message: ValidationErrors.IS_EMAIL })
     readonly email: string
 

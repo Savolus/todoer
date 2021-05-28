@@ -3,6 +3,10 @@ import { config } from 'dotenv'
 
 config()
 
+export const SERVER_PORT = process.env.PORT
+
+export const JWT_SECRET = process.env.JWT_SECRET
+
 export const configuration: TypeOrmModuleOptions = {
     "type": "mysql",
     "host": process.env.DB_HOST,

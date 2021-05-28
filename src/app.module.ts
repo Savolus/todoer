@@ -14,10 +14,7 @@ import { configuration } from './config/configuration';
 		UsersModule,
 		TodosModule,
 		AuthModule
-	],
-	controllers: [ ],
-	providers: [ ],
-	exports: [ ]
+	]
 })
 
 export class AppModule {}

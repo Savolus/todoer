@@ -2,9 +2,9 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
 
+import { ResponseUserDto } from '../types/classes/users/response-user.dto';
 import { ResponseLoginDto } from '../types/classes/auth/response-login.dto';
 import { RequestUserDto } from '../types/classes/users/request-user.dto';
-import { IUser } from '../types/interfaces/users/user.interface';
 
 import { UsersService } from '../users/users.service';
 
@@ -15,31 +15,25 @@ export class AuthService {
         private usersService: UsersService
     ) {}
 
-    async register(userDto: RequestUserDto): Promise<IUser> {
+    register(userDto: RequestUserDto): Promise<ResponseUserDto> {
         return this.usersService.create(userDto)
     }
 
     async login(userDto: RequestUserDto): Promise<ResponseLoginDto> {
-        const user: IUser = await this.usersService.findOneByLogin(userDto.login)
+        const user = await this.usersService.findOneByCredentials(
+            userDto.login,
+            userDto.email
+        )
 
-        if (!user) {
-            throw new UnauthorizedException('User dosn\'t exist')
-        }
-        if (user.login !== userDto.login) {
-            throw new UnauthorizedException('Invalid login')
-        }
-        if (user.email !== userDto.email) {
-            throw new UnauthorizedException('Invalid email')
-        }
         if (!(await compare(userDto.password, user.password))) {
-            throw new UnauthorizedException('Invalid password')
+            throw new UnauthorizedException('Wrong user\'s password')
         }
 
         return {
             token: await this.jwtService.sign({
                 ...user,
                 password: undefined
-            } as IUser, {
+            } as ResponseUserDto, {
                 expiresIn: '12h'
             })
         } as ResponseLoginDto

@@ -16,13 +16,15 @@ import {
     ApiResponse,
     ApiBody,
     ApiParam,
-    ApiUnauthorizedResponse
+    ApiUnauthorizedResponse,
+    ApiNotFoundResponse,
+    ApiBadRequestResponse
 } from '@nestjs/swagger'
 import { Request } from 'express';
 
+import { ResponseTodoDto } from '../types/classes/todos/response-todo.dto';
 import { RequestTodoDto } from '../types/classes/todos/request-todo.dto';
 import { IUser } from '../types/interfaces/users/user.interface';
-import { ITodo } from '../types/interfaces/todos/todo.interface';
 
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
@@ -42,31 +44,14 @@ export class TodosController {
 
     @ApiResponse({
         status: 200,
-        description: 'Get all user\'s todos',
+        description: 'Returns all user\'s todos',
         isArray: true,
-        schema: {
-            example: [
-                {
-                  "id": 1,
-                  "title": "Buy water",
-                  "description": "Go to the atb and buy water",
-                  "publish_date": "2021-05-27T09:20:56.000Z",
-                  "estimate": "2021-06-27T04:25:55.000Z"
-                },
-                {
-                  "id": 2,
-                  "title": "Buy butter",
-                  "description": "Go to the atb and buy butter",
-                  "publish_date": "2021-05-27T09:24:14.000Z",
-                  "estimate": "2021-06-27T04:25:55.000Z"
-                }
-              ]
-        }
+        type: ResponseTodoDto
     })
     @Get()
     findAll(
         @Req() req: Request
-    ): Promise<ITodo[]> {
+    ): Promise<ResponseTodoDto[]> {
         const user = req.user as IUser
 
         return this.todosService.findAll(user.id.toString())
@@ -74,16 +59,11 @@ export class TodosController {
 
     @ApiResponse({
         status: 200,
-        description: 'Get user\'s todo by id',
-        schema: {
-            example: {
-                "id": 2,
-                "title": "Buy butter",
-                "description": "Go to the atb and buy butter",
-                "publish_date": "2021-05-27T09:20:56.000Z",
-                "estimate": "2021-06-27T04:25:55.000Z"
-            }
-        }
+        description: 'Returns user\'s todo by todo\'s id',
+        type: ResponseTodoDto
+    })
+    @ApiNotFoundResponse({
+        description: 'No todo with this id'
     })
     @ApiParam({
         name: 'id',
@@ -94,7 +74,7 @@ export class TodosController {
     findOne(
         @Req() req: Request,
         @Param('id') id: string
-    ): Promise<ITodo> {
+    ): Promise<ResponseTodoDto> {
         const user = req.user as IUser
 
         return this.todosService.findOne(user.id.toString(), id)
@@ -102,16 +82,11 @@ export class TodosController {
 
     @ApiResponse({
         status: 201,
-        description: 'Create todo',
-        schema: {
-            example: {
-                "id": 3,
-                "title": "Buy chocolate",
-                "description": "Go to the atb and buy chocolate",
-                "publish_date": "2021-05-27T09:20:56.000Z",
-                "estimate": "2021-06-27T04:25:55.000Z"
-            }
-        }
+        description: 'Creates todo',
+        type: ResponseTodoDto
+    })
+    @ApiBadRequestResponse({
+        description: 'Bad request is given. Follow the request scheme'
     })
     @ApiBody({
         type: RequestTodoDto
@@ -120,7 +95,7 @@ export class TodosController {
     create(
         @Req() req: Request,
         @Body() todoDto: RequestTodoDto
-    ): Promise<ITodo> {
+    ): Promise<ResponseTodoDto> {
         const user = req.user as IUser
 
         return this.todosService.create(user.id.toString(), todoDto)
@@ -128,16 +103,14 @@ export class TodosController {
 
     @ApiResponse({
         status: 201,
-        description: 'Update todo by id',
-        schema: {
-            example: {
-                "id": 3,
-                "title": "Buy chocolate",
-                "description": "Go to the atb and buy chocolate",
-                "publish_date": "2021-05-27T09:20:56.000Z",
-                "estimate": "2021-06-27T04:25:55.000Z"
-            }
-        }
+        description: 'Updates todo by id',
+        type: ResponseTodoDto
+    })
+    @ApiBadRequestResponse({
+        description: 'Bad request is given. Follow the request scheme'
+    })
+    @ApiNotFoundResponse({
+        description: 'No todo with this id'
     })
     @ApiBody({
         type: RequestTodoDto
@@ -152,7 +125,7 @@ export class TodosController {
         @Req() req: Request,
         @Body() todoDto: RequestTodoDto,
         @Param('id') id: string
-    ): Promise<ITodo> {
+    ): Promise<ResponseTodoDto> {
         const user = req.user as IUser
 
         return this.todosService.update(
@@ -164,7 +137,7 @@ export class TodosController {
 
     @ApiResponse({
         status: 200,
-        description: 'Delete todo by id'
+        description: 'Deletes todo by id'
     })
     @ApiParam({
         name: 'id',
@@ -172,12 +145,7 @@ export class TodosController {
         example: '3'
     })
     @Delete(':id')
-    delete(
-        @Req() req: Request,
-        @Param('id') id: string
-    ): void {
-        const user = req.user as IUser
-
-        this.todosService.delete(user.id.toString(), id)
+    delete(@Param('id') id: string): void {
+        this.todosService.delete(id)
     }
 }

@@ -17,10 +17,13 @@ import {
     ApiParam,
     ApiUnauthorizedResponse,
     ApiForbiddenResponse,
-    ApiConflictResponse
+    ApiConflictResponse,
+    ApiNotFoundResponse,
+    ApiBadRequestResponse
 } from '@nestjs/swagger'
 import { Request } from 'express';
 
+import { ResponseUserDto } from '../types/classes/users/response-user.dto';
 import { RequestUserDto } from '../types/classes/users/request-user.dto';
 import { IUser } from '../types/interfaces/users/user.interface';
 
@@ -43,48 +46,29 @@ export class UsersController {
     
     @ApiResponse({
         status: 200,
-        description: 'Get all users',
+        description: 'Returns all users (only for admin)',
         isArray: true,
-        schema: {
-            example: [
-                {
-                    "id": 1,
-                    "login": "admin",
-                    "email": "admin@admin.com",
-                    "role": "admin"
-                },
-                {
-                    "id": 2,
-                    "login": "JhonDoeee",
-                    "email": "jhondoe1997@gamil.com",
-                    "role": "user"
-                }
-            ]
-        }
+        type: ResponseUserDto
     })
     @ApiForbiddenResponse({
-        description: 'Only for ADMIN role'
+        description: 'Only admin has access to all users'
     })
     @UseGuards(AdminAccessGuard)
     @Get()
-    findAll(): Promise<IUser[]> {
+    findAll(): Promise<ResponseUserDto[]> {
         return this.usersService.findAll()
     }
 
     @ApiResponse({
         status: 200,
-        description: 'Get user by id',
-        schema: {
-            example: {
-                "id": 2,
-                "login": "JhonDoeee",
-                "email": "jhondoe1997@gamil.com",
-                "role": "user"
-            }
-        }
+        description: 'Returns user by id (only fot admin)',
+        type: ResponseUserDto
     })
     @ApiForbiddenResponse({
-        description: 'Only for ADMIN role'
+        description: 'Only admin has access to all users'
+    })
+    @ApiNotFoundResponse({
+        description: 'No user with this id'
     })
     @ApiParam({
         name: 'id',
@@ -95,8 +79,8 @@ export class UsersController {
     @Get(':id')
     findOne(
         @Param('id') id: string
-    ): Promise<IUser> {
-        return this.usersService.findOne(id).then((user: IUser) => {
+    ): Promise<ResponseUserDto> {
+        return this.usersService.findOne(id).then((user: ResponseUserDto) => {
             return {
                 ...user,
                 password: undefined
@@ -106,18 +90,14 @@ export class UsersController {
 
     @ApiResponse({
         status: 201,
-        description: 'Create user',
-        schema: {
-            example: {
-                "id": 2,
-                "login": "JhonDoeee",
-                "email": "jhondoe1997@gamil.com",
-                "role": "user"
-            }
-        }
+        description: 'Creates user (only for admin)',
+        type: ResponseUserDto
+    })
+    @ApiBadRequestResponse({
+        description: 'Bad request is given. Follow the request scheme'
     })
     @ApiForbiddenResponse({
-        description: 'Only for ADMIN role'
+        description: 'Only admin has access to all users'
     })
     @ApiConflictResponse({
         description: 'User with this credetials already exists'
@@ -127,23 +107,19 @@ export class UsersController {
     })
     @UseGuards(AdminAccessGuard)
     @Post()
-    create(
+    createUser(
         @Body() userDto: RequestUserDto
-    ): Promise<IUser> {
+    ): Promise<ResponseUserDto> {
         return this.usersService.create(userDto, true)
     }
 
     @ApiResponse({
         status: 201,
-        description: 'Update user\'s data (by user)',
-        schema: {
-            example: {
-                "id": 2,
-                "login": "JhonDoeee1337",
-                "email": "jhondoe1997@gamil.com",
-                "role": "user"
-            }
-        }
+        description: 'Updates user\'s data (only for user)',
+        type: ResponseUserDto
+    })
+    @ApiBadRequestResponse({
+        description: 'Bad request is given. Follow the request scheme'
     })
     @ApiConflictResponse({
         description: 'User with this credetials already exists'
@@ -155,7 +131,7 @@ export class UsersController {
     updateByUser(
         @Req() req: Request,
         @Body() userDto: RequestUserDto
-    ): Promise<IUser> {
+    ): Promise<ResponseUserDto> {
         const user = req.user as IUser
 
         return this.usersService.update(user.id.toString(), userDto)
@@ -163,18 +139,17 @@ export class UsersController {
 
     @ApiResponse({
         status: 201,
-        description: 'Update user\'s data (by admin)',
-        schema: {
-            example: {
-                "id": 2,
-                "login": "JhonDoeee1337",
-                "email": "jhondoe1997@gamil.com",
-                "role": "user"
-            }
-        }
+        description: 'Updates user\'s data (only for admin)',
+        type: ResponseUserDto
+    })
+    @ApiBadRequestResponse({
+        description: 'Bad request is given. Follow the request scheme'
     })
     @ApiForbiddenResponse({
-        description: 'Only for ADMIN role'
+        description: 'Only admin has access to all users'
+    })
+    @ApiNotFoundResponse({
+        description: 'No user with this id'
     })
     @ApiConflictResponse({
         description: 'User with this credetials already exists'
@@ -187,20 +162,21 @@ export class UsersController {
         type: String,
         example: '1'
     })
+    @UseGuards(AdminAccessGuard)
     @Put(':id')
     updateByAdmin(
         @Body() userDto: RequestUserDto,
         @Param('id') id: string
-    ): Promise<IUser> {
+    ): Promise<ResponseUserDto> {
         return this.usersService.update(id, userDto, true)
     }
 
     @ApiResponse({
         status: 200,
-        description: 'Delete user by id',
+        description: 'Delete user by id (only for admin)',
     })
     @ApiForbiddenResponse({
-        description: 'Only for ADMIN role'
+        description: 'Only admin has access to all users'
     })
     @ApiParam({
         name: 'id',

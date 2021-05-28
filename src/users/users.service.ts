@@ -1,16 +1,17 @@
 import {
     ConflictException,
     Injectable,
-    NotFoundException
+    NotFoundException,
+    UnauthorizedException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { hash } from 'bcrypt'
 
+import { ResponseUserDto } from '../types/classes/users/response-user.dto';
 import { RequestUserDto } from '../types/classes/users/request-user.dto';
-import { IUser } from 'src/types/interfaces/users/user.interface';
+import { UserRoleEnum } from '../types/enums/user-role.enum';
 import { User } from '../entities/user.entity';
-import { UserRoleEnum } from 'src/types/enums/user-role.enum';
 
 @Injectable()
 export class UsersService {
@@ -19,26 +20,45 @@ export class UsersService {
         private usersRepository: Repository<User>
     ) {}
 
-    async findAll(): Promise<IUser[]> {
-        return await this.usersRepository.find({
+    findAll(): Promise<ResponseUserDto[]> {
+        return this.usersRepository.find({
             select: [ 'id', 'login', 'email', 'role' ]
-        }) as IUser[]
+        }) as Promise<ResponseUserDto[]>
     }
 
-    async findOne(id: string): Promise<IUser> {
-        return await this.usersRepository.findOne(id) as IUser
+    async findOne(id: string): Promise<ResponseUserDto> {
+        const user = await this.usersRepository.findOne(id)
+
+        if (!user) {
+            throw new NotFoundException('User not found')
+        }
+
+        return user as ResponseUserDto
     }
 
-    async findOneByLogin(login: string): Promise<IUser> {
-        return await this.usersRepository.findOne({
+    async findOneByCredentials(
+        login: string,
+        email: string
+    ): Promise<User> {
+        const user = await this.usersRepository.findOne({
             where: {
-                login
+                login,
+                email
             }
-        }) as IUser
+        })
+
+        if (!user) {
+            throw new UnauthorizedException('No user with this credentials')
+        }
+
+        return user
     }
 
-    async create(userDto: RequestUserDto, isAdmin: boolean = false): Promise<IUser> {
-        const tempUserLogin: User = await this.usersRepository.findOne({
+    async create(
+        userDto: RequestUserDto,
+        isAdmin = false
+    ): Promise<ResponseUserDto> {
+        const tempUserLogin = await this.usersRepository.findOne({
             where: {
                 login: userDto.login
             }
@@ -57,12 +77,15 @@ export class UsersService {
         if (tempUserEmail) {
             throw new ConflictException('User with this email already exists')
         }
-        
-        const user: User = {
-            login: userDto.login,
-            password: await hash(userDto.password, 10),
-            email: userDto.email,
-            role: isAdmin? userDto.role : UserRoleEnum.USER
+
+        const user = new User()
+
+        user.login = userDto.login
+        user.password = await hash(userDto.password, 10)
+        user.email = userDto.email
+
+        if (isAdmin) {
+            user.role = userDto.role ?? UserRoleEnum.USER
         }
 
         const createdUser = await this.usersRepository.save(user)
@@ -70,14 +93,14 @@ export class UsersService {
         return {
             ...createdUser,
             password: undefined
-        } as IUser
+        } as ResponseUserDto
     }
 
     async update(
         id: string,
         userDto: RequestUserDto,
-        isAdmin: boolean = false
-    ): Promise<IUser> {
+        isAdmin = false
+    ): Promise<ResponseUserDto> {
         const user = await this.usersRepository.findOne(id)
 
         if (!user) {
@@ -85,43 +108,45 @@ export class UsersService {
         }
 
         if (user.login !== userDto.login) {
-            const tempUserLogin = await this.usersRepository.findOne({
+            const tempUser = await this.usersRepository.findOne({
                 where: {
                     login: userDto.login
                 }
             })
 
-            if (tempUserLogin) {
+            if (tempUser) {
                 throw new ConflictException('Login is already taken')
             }
-
-            const tempUserEmail = await this.usersRepository.findOne({
+        }
+        if (user.email !== userDto.email) {
+            const tempUser = await this.usersRepository.findOne({
                 where: {
                     email: userDto.email
                 }
             })
 
-            if (tempUserEmail) {
+            if (tempUser) {
                 throw new ConflictException('Email is already taken')
             }
         }
 
         user.login = userDto.login
         user.password = await hash(userDto.password, 10)
+        user.email = userDto.email
         
         if (isAdmin) {
-            user.role = userDto.role
+            user.role = userDto.role ?? UserRoleEnum.USER
         }
 
-        const updatedUser = await this.usersRepository.save(user) as IUser
+        const updatedUser = await this.usersRepository.save(user)
 
         return {
             ...updatedUser,
             password: undefined
-        } as IUser
+        } as ResponseUserDto
     }
 
-    async delete(id: string): Promise<void> {
-        await this.usersRepository.delete(id)
+    delete(id: string): void {
+        this.usersRepository.delete(id)
     }
 }

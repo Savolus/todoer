@@ -10,6 +10,5 @@ export const ValidationErrors = {
 	IS_DATE : 'unix-date-expected',
 	MIN_DATE: 'less-then-current-unix-date',
 	MIN_LENGTH : 'less-then-min-length',
-	MAX_LENGTH : 'more-then-max-length',
-	NOT_MATCH : 'unallowed-symbols-used'
+	MAX_LENGTH : 'more-then-max-length'
 }
