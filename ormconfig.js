@@ -9,8 +9,10 @@ module.exports = {
     "password": process.env.DB_PASSWORD,
     "database": process.env.DB_NAME,
     "entities": [ "dist/**/*.entity{.ts,.js}" ],
+    "migrations": [ "src/migrations/*{.ts,.js}" ],
     "cli": {
-        "entitiesDir": "src/entities/"
+        "entitiesDir": "src/entities/",
+        "migrationsDir": "src/migrations"
     },
     "autoLoadEntities": true
 }

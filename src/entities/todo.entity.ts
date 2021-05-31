@@ -24,6 +24,6 @@ export class Todo {
     @Column({ type: 'datetime' })
     estimate: Date
 
-    @ManyToOne(type => User, user => user.todos)
+    @ManyToOne(() => User, user => user.todos)
     user: User
 }

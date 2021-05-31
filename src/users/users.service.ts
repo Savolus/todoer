@@ -78,11 +78,11 @@ export class UsersService {
             throw new ConflictException('User with this email already exists')
         }
 
-        const user = new User()
-
-        user.login = userDto.login
-        user.password = await hash(userDto.password, 10)
-        user.email = userDto.email
+        const user = this.usersRepository.create({
+            login: userDto.login,
+            password: userDto.password,
+            email: userDto.email,
+        })
 
         if (isAdmin) {
             user.role = userDto.role ?? UserRoleEnum.USER
@@ -131,7 +131,7 @@ export class UsersService {
         }
 
         user.login = userDto.login
-        user.password = await hash(userDto.password, 10)
+        user.password = userDto.password
         user.email = userDto.email
         
         if (isAdmin) {

@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, BeforeInsert } from 'typeorm'
+import { hash } from 'bcrypt'
 
 import { UserRoleEnum } from '../types/enums/user-role.enum'
 import { Todo } from './todo.entity'
@@ -24,6 +25,11 @@ export class User {
     })
     role?: UserRoleEnum
 
-    @OneToMany(type => Todo, todo => todo.user)
+    @OneToMany(() => Todo, todo => todo.user)
     todos?: Todo[]
+
+    @BeforeInsert()
+    async hashPassword() {
+        this.password = await hash(this.password, 10)
+    }
 }
